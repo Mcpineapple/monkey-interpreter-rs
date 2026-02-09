@@ -1,32 +1,25 @@
-mod token {
-    const ILLEGAL: &str = "ILLEGAL";
-    const EOF: &str = "EOF";
+#[derive(Debug, Clone, PartialEq)]
+pub enum Token {
+    Illegal,
+    Eof,
 
     // Identifiers + literals
-    const IDENT: &str = "IDENT";
-    const INT: &str = "INT";
+    Ident(String),
+    Int(i64),
 
-    // operators
-    const ASSIGN: &str = "=";
-    const PLUS: &str = "+";
+    // Operators
+    Assign,
+    Plus,
 
     // Delimiters
-    const COMMA: &str = ",";
-    const SEMICOLON: &str = ";";
-
-    const LPAREN: &str = "(";
-    const RPAREN: &str = ")";
-    const LBRACE: &str = "{";
-    const RBRACE: &str = "}";
+    Comma,
+    Semicolon,
+    Lparen,
+    Rparen,
+    Lbrace,
+    Rbrace,
 
     // Keywords
-    const FUNCTION: &str = "FUNCTION";
-    const LET: &str = "LET";
-
-    type TokenType = String;
-
-    struct Token {
-        Type: TokenType,
-        Literal: &str,
-    }
+    Function,
+    Let,
 }
