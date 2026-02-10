@@ -35,7 +35,14 @@ impl<'a> Lexer<'a> {
         println!("token letter : {}", &self.ch);
 
         let tok: Token = match self.ch {
-            '=' => Token::Assign,
+            '=' => {
+                if self.peekChar() == '=' {
+                    self.readChar();
+                    Token::Eq
+                } else {
+                    Token::Assign
+                }
+            }
             ';' => Token::Semicolon,
             '(' => Token::Lparen,
             ')' => Token::Rparen,
@@ -43,6 +50,19 @@ impl<'a> Lexer<'a> {
             '{' => Token::Lbrace,
             '}' => Token::Rbrace,
             ',' => Token::Comma,
+            '-' => Token::Minus,
+            '!' => {
+                if self.peekChar() == '=' {
+                    self.readChar();
+                    Token::Neq
+                } else {
+                    Token::Bang
+                }
+            }
+            '*' => Token::Asterisk,
+            '/' => Token::Slash,
+            '<' => Token::Lt,
+            '>' => Token::Gt,
             '\x00' => Token::Eof,
             other => {
                 if isLetter(&other) {
@@ -94,6 +114,14 @@ impl<'a> Lexer<'a> {
             self.readChar();
         }
     }
+
+    pub fn peekChar(&self) -> char {
+        if self.readPosition >= self.input.len() {
+            return '\x00';
+        } else {
+            return self.input.chars().nth(self.readPosition).unwrap();
+        }
+    }
 }
 pub fn isLetter(ch: &char) -> bool {
     //!['=', ';', '(', ')', '+', '{', '}', ',', '\x00'].contains(ch)
@@ -141,7 +169,20 @@ let add = fn(x, y) {
   x + y;
 };
 
-let result = add(five, ten);";
+let result = add(five, ten);
+!-/*5;
+5 < 10 > 5;
+
+if (5 < 10) {
+    return true;
+
+} else {
+    return false;
+}
+
+10 == 10;
+10 != 9;
+";
 
         let mut tests: Vec<Token> = Vec::new();
         tests.push(Token::Let);
@@ -179,6 +220,43 @@ let result = add(five, ten);";
         tests.push(Token::Comma);
         tests.push(Token::Ident("ten".to_string()));
         tests.push(Token::Rparen);
+        tests.push(Token::Semicolon);
+        tests.push(Token::Bang);
+        tests.push(Token::Minus);
+        tests.push(Token::Slash);
+        tests.push(Token::Asterisk);
+        tests.push(Token::Int(5));
+        tests.push(Token::Semicolon);
+        tests.push(Token::Int(5));
+        tests.push(Token::Lt);
+        tests.push(Token::Int(10));
+        tests.push(Token::Gt);
+        tests.push(Token::Int(5));
+        tests.push(Token::Semicolon);
+        tests.push(Token::If);
+        tests.push(Token::Lparen);
+        tests.push(Token::Int(5));
+        tests.push(Token::Lt);
+        tests.push(Token::Int(10));
+        tests.push(Token::Rparen);
+        tests.push(Token::Lbrace);
+        tests.push(Token::Return);
+        tests.push(Token::True);
+        tests.push(Token::Semicolon);
+        tests.push(Token::Rbrace);
+        tests.push(Token::Else);
+        tests.push(Token::Lbrace);
+        tests.push(Token::Return);
+        tests.push(Token::False);
+        tests.push(Token::Semicolon);
+        tests.push(Token::Rbrace);
+        tests.push(Token::Int(10));
+        tests.push(Token::Eq);
+        tests.push(Token::Int(10));
+        tests.push(Token::Semicolon);
+        tests.push(Token::Int(10));
+        tests.push(Token::Neq);
+        tests.push(Token::Int(9));
         tests.push(Token::Semicolon);
         tests.push(Token::Eof);
 

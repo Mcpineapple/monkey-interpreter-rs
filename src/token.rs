@@ -10,6 +10,16 @@ pub enum Token {
     // Operators
     Assign,
     Plus,
+    Minus,
+    Bang,
+    Asterisk,
+    Slash,
+
+    Lt,
+    Gt,
+
+    Eq,
+    Neq,
 
     // Delimiters
     Comma,
@@ -22,12 +32,22 @@ pub enum Token {
     // Keywords
     Function,
     Let,
+    True,
+    False,
+    If,
+    Else,
+    Return,
 }
 
 pub fn stringToToken(string: String) -> Token {
     match string.as_str() {
         "let" => Token::Let,
         "fn" => Token::Function,
+        "return" => Token::Return,
+        "else" => Token::Else,
+        "if" => Token::If,
+        "false" => Token::False,
+        "true" => Token::True,
         other => Token::Ident(string),
     }
 }
