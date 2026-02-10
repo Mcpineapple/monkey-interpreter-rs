@@ -1,6 +1,6 @@
 use crate::token::{self, Token};
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Lexer<'a> {
     pub input: &'a str,
     pub position: usize,
@@ -30,7 +30,9 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn nextToken(&mut self) -> Token {
+        let mut skip = true;
         self.skipWhitespace();
+        println!("token letter : {}", &self.ch);
 
         let tok: Token = match self.ch {
             '=' => Token::Assign,
@@ -44,8 +46,10 @@ impl<'a> Lexer<'a> {
             '\x00' => Token::Eof,
             other => {
                 if isLetter(&other) {
+                    skip = false;
                     token::stringToToken(self.readIdentifier())
                 } else if isDigit(&other) {
+                    skip = false;
                     Token::Int(self.readNumber())
                 } else {
                     Token::Illegal
@@ -53,12 +57,15 @@ impl<'a> Lexer<'a> {
             }
         };
 
-        self.readChar();
+        if skip {
+            self.readChar();
+        }
 
         tok
     }
 
     pub fn readIdentifier(&mut self) -> String {
+        println!("rI");
         let position = self.position;
         while isLetter(&self.ch) {
             self.readChar();
@@ -68,6 +75,7 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn readNumber(&mut self) -> i64 {
+        println!("rN");
         let position = self.position;
         while isDigit(&self.ch) {
             self.readChar();
@@ -80,18 +88,22 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn skipWhitespace(&mut self) {
+        println!("white");
         while self.ch.is_whitespace() {
+            println!("sk : {}", &self.ch);
             self.readChar();
         }
     }
 }
 pub fn isLetter(ch: &char) -> bool {
     //!['=', ';', '(', ')', '+', '{', '}', ',', '\x00'].contains(ch)
+    println!("iL {} {}", ch, ch.is_ascii_alphabetic());
     ch.is_ascii_alphabetic()
 }
 
 pub fn isDigit(ch: &char) -> bool {
-    ch.is_numeric()
+    println!("iD : {} {}", ch, ch.is_ascii_digit());
+    ch.is_ascii_digit()
 }
 
 #[cfg(test)]
@@ -129,7 +141,7 @@ let add = fn(x, y) {
   x + y;
 };
 
-let result = add(five, ten)";
+let result = add(five, ten);";
 
         let mut tests: Vec<Token> = Vec::new();
         tests.push(Token::Let);
@@ -155,6 +167,7 @@ let result = add(five, ten)";
         tests.push(Token::Ident("x".to_string()));
         tests.push(Token::Plus);
         tests.push(Token::Ident("y".to_string()));
+        tests.push(Token::Semicolon);
         tests.push(Token::Rbrace);
         tests.push(Token::Semicolon);
         tests.push(Token::Let);
@@ -173,7 +186,7 @@ let result = add(five, ten)";
 
         for t in tests {
             let tok = l.nextToken();
-            println!("t : {:?} \n tok : {:?}", t, tok);
+            println!("t : {:?} \n tok : {:?} \n lexer : {:?}", t, tok, l);
 
             assert_eq!(tok, t);
         }
