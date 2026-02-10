@@ -23,3 +23,11 @@ pub enum Token {
     Function,
     Let,
 }
+
+pub fn stringToToken(string: String) -> Token {
+    match string.as_str() {
+        "let" => Token::Let,
+        "fn" => Token::Function,
+        other => Token::Ident(string),
+    }
+}

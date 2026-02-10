@@ -30,6 +30,8 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn nextToken(&mut self) -> Token {
+        self.skipWhitespace();
+
         let tok: Token = match self.ch {
             '=' => Token::Assign,
             ';' => Token::Semicolon,
@@ -40,13 +42,56 @@ impl<'a> Lexer<'a> {
             '}' => Token::Rbrace,
             ',' => Token::Comma,
             '\x00' => Token::Eof,
-            _ => Token::Illegal,
+            other => {
+                if isLetter(&other) {
+                    token::stringToToken(self.readIdentifier())
+                } else if isDigit(&other) {
+                    Token::Int(self.readNumber())
+                } else {
+                    Token::Illegal
+                }
+            }
         };
 
         self.readChar();
 
         tok
     }
+
+    pub fn readIdentifier(&mut self) -> String {
+        let position = self.position;
+        while isLetter(&self.ch) {
+            self.readChar();
+        }
+
+        return self.input[position..self.position].to_string();
+    }
+
+    pub fn readNumber(&mut self) -> i64 {
+        let position = self.position;
+        while isDigit(&self.ch) {
+            self.readChar();
+        }
+
+        return self.input[position..self.position]
+            .to_string()
+            .parse()
+            .unwrap();
+    }
+
+    pub fn skipWhitespace(&mut self) {
+        while self.ch.is_whitespace() {
+            self.readChar();
+        }
+    }
+}
+pub fn isLetter(ch: &char) -> bool {
+    //!['=', ';', '(', ')', '+', '{', '}', ',', '\x00'].contains(ch)
+    ch.is_ascii_alphabetic()
+}
+
+pub fn isDigit(ch: &char) -> bool {
+    ch.is_numeric()
 }
 
 #[cfg(test)]
@@ -78,7 +123,7 @@ mod tests {
     #[test]
     fn test_NextToken_Two() {
         let input = "let five = 5;
-let 10 = 10;
+let ten = 10;
 
 let add = fn(x, y) {
   x + y;
@@ -110,6 +155,7 @@ let result = add(five, ten)";
         tests.push(Token::Ident("x".to_string()));
         tests.push(Token::Plus);
         tests.push(Token::Ident("y".to_string()));
+        tests.push(Token::Rbrace);
         tests.push(Token::Semicolon);
         tests.push(Token::Let);
         tests.push(Token::Ident("result".to_string()));
@@ -127,6 +173,7 @@ let result = add(five, ten)";
 
         for t in tests {
             let tok = l.nextToken();
+            println!("t : {:?} \n tok : {:?}", t, tok);
 
             assert_eq!(tok, t);
         }
