@@ -1,17 +1,17 @@
 use crate::token::{self, Token};
 
 #[derive(Default, Debug)]
-pub struct Lexer<'a> {
-    pub input: &'a str,
+pub struct Lexer {
+    pub input: String,
     pub position: usize,
     pub readPosition: usize,
     pub ch: char,
 }
 
-impl<'a> Lexer<'a> {
-    pub fn new(input: &'a str) -> Self {
+impl Lexer {
+    pub fn new(input: &str) -> Self {
         let mut result = Self {
-            input,
+            input: input.clone().to_string(),
             ..Default::default()
         };
         result.readChar();
