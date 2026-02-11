@@ -5,16 +5,17 @@ use std::io::Write;
 
 const PROMPT: &str = ">> ";
 
-fn start() {
+pub fn start() {
     loop {
-        println!("{}", PROMPT);
+        print!("{}", PROMPT);
+        io::stdout().flush();
         let mut input = String::new();
 
         io::stdin().read_line(&mut input).unwrap();
         let mut l = lexer::Lexer::new(&input);
 
         while l.ch != '\x00' {
-            println!("{:?}\n", l.nextToken());
+            println!("{:?}", l.nextToken());
         }
     }
 }

@@ -32,7 +32,6 @@ impl<'a> Lexer<'a> {
     pub fn nextToken(&mut self) -> Token {
         let mut skip = true;
         self.skipWhitespace();
-        println!("token letter : {}", &self.ch);
 
         let tok: Token = match self.ch {
             '=' => {
@@ -85,7 +84,6 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn readIdentifier(&mut self) -> String {
-        println!("rI");
         let position = self.position;
         while isLetter(&self.ch) {
             self.readChar();
@@ -95,7 +93,6 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn readNumber(&mut self) -> i64 {
-        println!("rN");
         let position = self.position;
         while isDigit(&self.ch) {
             self.readChar();
@@ -108,9 +105,7 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn skipWhitespace(&mut self) {
-        println!("white");
         while self.ch.is_whitespace() {
-            println!("sk : {}", &self.ch);
             self.readChar();
         }
     }
@@ -125,12 +120,10 @@ impl<'a> Lexer<'a> {
 }
 pub fn isLetter(ch: &char) -> bool {
     //!['=', ';', '(', ')', '+', '{', '}', ',', '\x00'].contains(ch)
-    println!("iL {} {}", ch, ch.is_ascii_alphabetic());
     ch.is_ascii_alphabetic()
 }
 
 pub fn isDigit(ch: &char) -> bool {
-    println!("iD : {} {}", ch, ch.is_ascii_digit());
     ch.is_ascii_digit()
 }
 
@@ -264,7 +257,6 @@ if (5 < 10) {
 
         for t in tests {
             let tok = l.nextToken();
-            println!("t : {:?} \n tok : {:?} \n lexer : {:?}", t, tok, l);
 
             assert_eq!(tok, t);
         }
