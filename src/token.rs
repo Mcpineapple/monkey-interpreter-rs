@@ -39,6 +39,12 @@ pub enum Token {
     Return,
 }
 
+impl Default for Token {
+    fn default() -> Self {
+        Token::Illegal
+    }
+}
+
 pub fn stringToToken(string: String) -> Token {
     match string.as_str() {
         "let" => Token::Let,
@@ -92,7 +98,6 @@ impl ToString for Token {
             Self::If => "If".to_string(),
             Self::Else => "Else".to_string(),
             Self::Return => "Ret".to_string(),
-            _ => "Error".to_string(),
         }
     }
 }

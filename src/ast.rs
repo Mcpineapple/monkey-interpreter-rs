@@ -35,7 +35,7 @@ struct LetStatement {
 
 impl Node for LetStatement {
     fn tokenLiteral(&self) -> String {
-        format!("{:?}", self.token)
+        self.token.to_string()
     }
 }
 
@@ -50,7 +50,7 @@ struct Identifier {
 
 impl Node for Identifier {
     fn tokenLiteral(&self) -> String {
-        format!("{:?}", self.token)
+        self.token.to_string()
     }
 }
 
