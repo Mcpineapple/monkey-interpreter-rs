@@ -3,7 +3,11 @@ use std::fmt::format;
 
 #[derive(PartialEq, Debug)]
 pub enum Statement {
-    LetStatement(Token, Token, Expression),
+    LetStatement {
+        tok: Token,
+        name: Token,
+        value: Expression,
+    },
 }
 
 #[derive(PartialEq, Debug)]
