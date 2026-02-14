@@ -1,3 +1,4 @@
+use self::Token::*;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Illegal,
@@ -42,6 +43,51 @@ pub enum Token {
 impl Default for Token {
     fn default() -> Self {
         Token::Illegal
+    }
+}
+
+impl Token {
+    pub fn same_tok(&self, other: Self) -> bool {
+        match (self, other) {
+            (Illegal, Illegal) => true,
+            (Eof, Eof) => true,
+
+            // Identifiers + literals
+            (Ident(_), Ident(_)) => true,
+            (Int(_), Ident(_)) => true,
+
+            // Operators
+            (Assign, Assign) => true,
+            (Plus, Plus) => true,
+            (Minus, Minus) => true,
+            (Bang, Bang) => true,
+            (Asterisk, Asterisk) => true,
+            (Slash, Slash) => true,
+
+            (Lt, Lt) => true,
+            (Gt, Gt) => true,
+
+            (Eq, Eq) => true,
+            (Neq, Neq) => true,
+
+            // Delimiters
+            (Comma, Comma) => true,
+            (Semicolon, Semicolon) => true,
+            (Lparen, Lparen) => true,
+            (Rparen, Rparen) => true,
+            (Lbrace, Lbrace) => true,
+            (Rbrace, Rbrace) => true,
+
+            // Keywords
+            (Function, Function) => true,
+            (Let, Let) => true,
+            (True, True) => true,
+            (False, False) => true,
+            (If, If) => true,
+            (Else, Else) => true,
+            (Return, Return) => true,
+            _ => false,
+        }
     }
 }
 
