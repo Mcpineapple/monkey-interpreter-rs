@@ -5,8 +5,8 @@ use crate::token;
 #[derive(Default)]
 pub struct Parser {
     pub l: lexer::Lexer,
-    pub curToken: token::Token,
-    pub peekToken: token::Token,
+    pub cur_token: token::Token,
+    pub peek_token: token::Token,
 }
 
 impl Parser {
@@ -15,76 +15,76 @@ impl Parser {
             l: lex,
             ..Default::default()
         };
-        p.nextToken();
-        p.nextToken();
+        p.next_token();
+        p.next_token();
         p
     }
 
-    fn nextToken(&mut self) {
-        self.curToken = self.peekToken.clone();
-        self.peekToken = self.l.nextToken();
+    fn next_token(&mut self) {
+        self.cur_token = self.peek_token.clone();
+        self.peek_token = self.l.next_token();
     }
 
-    fn parseProgram(&mut self) -> ast::Program {
+    fn parse_program(&mut self) -> ast::Program {
         let mut prog = ast::Program {
             statements: Vec::new(),
         };
 
-        while self.curToken != token::Token::Eof {
+        while self.cur_token != token::Token::Eof {
             prog.statements
-                .push(self.parseStatement().expect("Bad statement"));
-            self.nextToken();
+                .push(self.parse_statement().expect("Bad statement"));
+            self.next_token();
         }
 
         prog
     }
 
-    fn parseStatement(&mut self) -> Option<ast::Statement> {
-        match self.curToken {
-            token::Token::Let => Some(self.parseLetStatement().expect("bad let statement")),
+    fn parse_statement(&mut self) -> Option<ast::Statement> {
+        match self.cur_token {
+            token::Token::Let => Some(self.parse_let_statement().expect("bad let statement")),
             _ => None,
         }
     }
 
-    fn parseLetStatement(&mut self) -> Option<ast::Statement> {
-        let stmt_token = self.curToken.clone();
+    fn parse_let_statement(&mut self) -> Option<ast::Statement> {
+        let stmt_token = self.cur_token.clone();
 
-        if !self.expectPeek(token::Token::Ident("".to_string())) {
+        if !self.expect_peek(token::Token::Ident("".to_string())) {
             return None;
         }
 
         let stmt = ast::Statement::LetStatement {
             tok: stmt_token,
-            name: self.curToken.clone(),
+            name: self.cur_token.clone(),
             value: ast::Expression::Identifier(token::Token::Illegal),
         };
 
-        if !self.expectPeek(token::Token::Assign) {
+        if !self.expect_peek(token::Token::Assign) {
             return None;
         }
 
-        while !self.curTokenIs(token::Token::Semicolon) {
-            self.nextToken();
+        while !self.cur_token_is(token::Token::Semicolon) {
+            self.next_token();
         }
 
         return Some(stmt);
     }
 
-    fn expectPeek(&mut self, t: token::Token) -> bool {
-        if self.peekTokenIs(t) {
-            self.nextToken();
+    fn expect_peek(&mut self, t: token::Token) -> bool {
+        if self.peek_token_is(t) {
+            self.next_token();
             true
         } else {
             false
         }
     }
 
-    fn peekTokenIs(&self, t: token::Token) -> bool {
-        self.peekToken.same_tok(t)
+    fn peek_token_is(&self, t: token::Token) -> bool {
+        self.peek_token.same_tok(t)
     }
 
-    fn curTokenIs(&self, t: token::Token) -> bool {
-        t == self.curToken
+    fn cur_token_is(&self, t: token::Token) -> bool {
+        t == self.cur_token
     }
 }
 
@@ -94,7 +94,7 @@ mod tests {
     use crate::ast::Statement;
 
     #[test]
-    fn test_LetStatements() {
+    fn test_let_statements() {
         let input = "
 let x = 5;
 let y = 10;
@@ -103,18 +103,18 @@ let foobar = 838383;
         let l = lexer::Lexer::new(input);
         let mut p = Parser::new(l);
 
-        let program = p.parseProgram();
+        let program = p.parse_program();
 
         assert_eq!(program.statements.len(), 3);
 
         let tests = vec!["x", "y", "foobar"];
 
         for i in 0..3 {
-            assert!(testLetStatement(&program.statements[i], tests[i]))
+            assert!(test_let_statement(&program.statements[i], tests[i]))
         }
     }
 
-    fn testLetStatement(s: &ast::Statement, name: &str) -> bool {
+    fn test_let_statement(s: &ast::Statement, name: &str) -> bool {
         if let ast::Statement::LetStatement {
             tok: t,
             name: n,

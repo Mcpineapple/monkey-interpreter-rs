@@ -91,7 +91,7 @@ impl Token {
     }
 }
 
-pub fn stringToToken(string: String) -> Token {
+pub fn string_to_token(string: String) -> Token {
     match string.as_str() {
         "let" => Token::Let,
         "fn" => Token::Function,

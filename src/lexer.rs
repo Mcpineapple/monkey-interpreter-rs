@@ -4,39 +4,39 @@ use crate::token::{self, Token};
 pub struct Lexer {
     pub input: String,
     pub position: usize,
-    pub readPosition: usize,
+    pub read_position: usize,
     pub ch: char,
 }
 
 impl Lexer {
     pub fn new(input: &str) -> Self {
         let mut result = Self {
-            input: input.clone().to_string(),
+            input: input.to_string(),
             ..Default::default()
         };
-        result.readChar();
+        result.read_char();
         result
     }
 
-    pub fn readChar(&mut self) {
-        if self.readPosition >= self.input.chars().count() {
+    pub fn read_char(&mut self) {
+        if self.read_position >= self.input.chars().count() {
             self.ch = '\x00';
         } else {
-            self.ch = self.input.chars().nth(self.readPosition).unwrap();
+            self.ch = self.input.chars().nth(self.read_position).unwrap();
         }
 
-        self.position = self.readPosition;
-        self.readPosition += 1;
+        self.position = self.read_position;
+        self.read_position += 1;
     }
 
-    pub fn nextToken(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Token {
         let mut skip = true;
-        self.skipWhitespace();
+        self.skip_whitespace();
 
         let tok: Token = match self.ch {
             '=' => {
-                if self.peekChar() == '=' {
-                    self.readChar();
+                if self.peek_char() == '=' {
+                    self.read_char();
                     Token::Eq
                 } else {
                     Token::Assign
@@ -51,8 +51,8 @@ impl Lexer {
             ',' => Token::Comma,
             '-' => Token::Minus,
             '!' => {
-                if self.peekChar() == '=' {
-                    self.readChar();
+                if self.peek_char() == '=' {
+                    self.read_char();
                     Token::Neq
                 } else {
                     Token::Bang
@@ -64,12 +64,12 @@ impl Lexer {
             '>' => Token::Gt,
             '\x00' => Token::Eof,
             other => {
-                if isLetter(&other) {
+                if is_letter(&other) {
                     skip = false;
-                    token::stringToToken(self.readIdentifier())
-                } else if isDigit(&other) {
+                    token::string_to_token(self.read_identifier())
+                } else if is_digit(&other) {
                     skip = false;
-                    Token::Int(self.readNumber())
+                    Token::Int(self.read_number())
                 } else {
                     Token::Illegal
                 }
@@ -77,25 +77,25 @@ impl Lexer {
         };
 
         if skip {
-            self.readChar();
+            self.read_char();
         }
 
         tok
     }
 
-    pub fn readIdentifier(&mut self) -> String {
+    pub fn read_identifier(&mut self) -> String {
         let position = self.position;
-        while isLetter(&self.ch) {
-            self.readChar();
+        while is_letter(&self.ch) {
+            self.read_char();
         }
 
         return self.input[position..self.position].to_string();
     }
 
-    pub fn readNumber(&mut self) -> i64 {
+    pub fn read_number(&mut self) -> i64 {
         let position = self.position;
-        while isDigit(&self.ch) {
-            self.readChar();
+        while is_digit(&self.ch) {
+            self.read_char();
         }
 
         return self.input[position..self.position]
@@ -104,26 +104,26 @@ impl Lexer {
             .unwrap();
     }
 
-    pub fn skipWhitespace(&mut self) {
+    pub fn skip_whitespace(&mut self) {
         while self.ch.is_whitespace() {
-            self.readChar();
+            self.read_char();
         }
     }
 
-    pub fn peekChar(&self) -> char {
-        if self.readPosition >= self.input.len() {
+    pub fn peek_char(&self) -> char {
+        if self.read_position >= self.input.len() {
             return '\x00';
         } else {
-            return self.input.chars().nth(self.readPosition).unwrap();
+            return self.input.chars().nth(self.read_position).unwrap();
         }
     }
 }
-pub fn isLetter(ch: &char) -> bool {
+pub fn is_letter(ch: &char) -> bool {
     //!['=', ';', '(', ')', '+', '{', '}', ',', '\x00'].contains(ch)
     ch.is_ascii_alphabetic()
 }
 
-pub fn isDigit(ch: &char) -> bool {
+pub fn is_digit(ch: &char) -> bool {
     ch.is_ascii_digit()
 }
 
@@ -131,7 +131,7 @@ pub fn isDigit(ch: &char) -> bool {
 mod tests {
     use super::*;
     #[test]
-    fn test_NextToken_One() {
+    fn test_next_token_one() {
         let input = "=+(){},;";
 
         let mut tests: Vec<Token> = Vec::new();
@@ -148,13 +148,13 @@ mod tests {
         let mut l = Lexer::new(input);
 
         for t in tests {
-            let tok = l.nextToken();
+            let tok = l.next_token();
 
             assert_eq!(tok, t);
         }
     }
     #[test]
-    fn test_NextToken_Two() {
+    fn test_next_token_two() {
         let input = "let five = 5;
 let ten = 10;
 
@@ -256,7 +256,7 @@ if (5 < 10) {
         let mut l = Lexer::new(input);
 
         for t in tests {
-            let tok = l.nextToken();
+            let tok = l.next_token();
 
             assert_eq!(tok, t);
         }
