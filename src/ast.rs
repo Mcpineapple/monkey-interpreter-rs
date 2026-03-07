@@ -8,6 +8,10 @@ pub enum Statement {
         name: Token,
         value: Expression,
     },
+    ReturnStatement {
+        tok: Token,
+        return_value: Expression,
+    },
     BadStatement,
 }
 
