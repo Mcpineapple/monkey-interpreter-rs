@@ -196,4 +196,49 @@ let = 838383;
             false
         }
     }
+
+    #[test]
+    fn test_return_statements() {
+        let input = "
+return 5;
+return 10;
+return 993322;
+";
+        let l = lexer::Lexer::new(input);
+        let mut p = Parser::new(l);
+
+        let program = p.parse_program();
+        check_parser_errors(&p);
+
+        assert_eq!(program.statements.len(), 3);
+
+        let tests = vec!["5", "10", "993322"];
+
+        for i in 0..3 {
+            assert!(test_return_statement(&program.statements[i], tests[i]))
+        }
+    }
+
+    fn test_return_statement(s: &ast::Statement, number: &str) -> bool {
+        if let ast::Statement::ReturnStatement {
+            tok: t,
+            return_value: v,
+        } = s
+        {
+            if *t != token::Token::Return {
+                println!("token is not return");
+                return false;
+            }
+
+            if let v = ast::Expression::Identifier(token::Token::Ident(number.to_string())) {
+                true
+            } else {
+                println!("expression has wrong value");
+                false
+            }
+        } else {
+            println!("statement is not return");
+            false
+        }
+    }
 }
