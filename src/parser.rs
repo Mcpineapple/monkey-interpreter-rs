@@ -7,6 +7,7 @@ pub struct Parser {
     pub l: lexer::Lexer,
     pub cur_token: token::Token,
     pub peek_token: token::Token,
+    pub errors: Vec<String>,
 }
 
 impl Parser {
@@ -31,8 +32,10 @@ impl Parser {
         };
 
         while self.cur_token != token::Token::Eof {
-            prog.statements
-                .push(self.parse_statement().expect("Bad statement"));
+            prog.statements.push(
+                self.parse_statement()
+                    .unwrap_or(ast::Statement::BadStatement),
+            );
             self.next_token();
         }
 
@@ -41,7 +44,10 @@ impl Parser {
 
     fn parse_statement(&mut self) -> Option<ast::Statement> {
         match self.cur_token {
-            token::Token::Let => Some(self.parse_let_statement().expect("bad let statement")),
+            token::Token::Let => Some(
+                self.parse_let_statement()
+                    .unwrap_or(ast::Statement::BadStatement),
+            ),
             _ => None,
         }
     }
@@ -71,10 +77,11 @@ impl Parser {
     }
 
     fn expect_peek(&mut self, t: token::Token) -> bool {
-        if self.peek_token_is(t) {
+        if self.peek_token_is(t.clone()) {
             self.next_token();
             true
         } else {
+            self.peek_error(t.clone());
             false
         }
     }
@@ -85,6 +92,19 @@ impl Parser {
 
     fn cur_token_is(&self, t: token::Token) -> bool {
         t == self.cur_token
+    }
+
+    fn get_errors(&self) -> Vec<String> {
+        self.errors.clone()
+    }
+
+    fn peek_error(&mut self, t: token::Token) {
+        let msg = format!(
+            "expected next token to be {}, got {} instead",
+            t.to_string(),
+            self.peek_token.to_string()
+        );
+        self.errors.push(msg);
     }
 }
 
@@ -104,6 +124,7 @@ let foobar = 838383;
         let mut p = Parser::new(l);
 
         let program = p.parse_program();
+        check_parser_errors(&p);
 
         assert_eq!(program.statements.len(), 3);
 
@@ -112,6 +133,44 @@ let foobar = 838383;
         for i in 0..3 {
             assert!(test_let_statement(&program.statements[i], tests[i]))
         }
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_bad_let_statements() {
+        let input = "
+let x = 5;
+let y = 10;
+let = 838383;
+";
+        let l = lexer::Lexer::new(input);
+        let mut p = Parser::new(l);
+
+        let program = p.parse_program();
+        check_parser_errors(&p);
+
+        assert_eq!(program.statements.len(), 3);
+
+        let tests = vec!["x", "y", "foobar"];
+
+        for i in 0..3 {
+            assert!(test_let_statement(&program.statements[i], tests[i]))
+        }
+    }
+
+    fn check_parser_errors(p: &Parser) {
+        let errors = p.get_errors();
+        if errors.len() == 0 {
+            return;
+        }
+
+        println!("parser has {} errors", errors.len());
+
+        for msg in errors {
+            println!("parser error : {}", msg);
+        }
+
+        panic!();
     }
 
     fn test_let_statement(s: &ast::Statement, name: &str) -> bool {
