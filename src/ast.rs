@@ -8,6 +8,7 @@ pub enum Statement {
         name: Token,
         value: Expression,
     },
+    BadStatement,
 }
 
 #[derive(PartialEq, Debug)]
